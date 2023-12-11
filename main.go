@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
+	"strings"
 )
 
 func main() {
@@ -32,9 +34,87 @@ func main() {
 }
 
 func part1(input string) {
-	panic("todo")
+	totalPoints := 0
+	for _, card := range strings.Split(input, "\r\n") {
+		numbers := strings.Split(card, ": ")[1]
+		winningAndMyNumbersStr := strings.Split(numbers, " | ")
+		winningNumbersStr := winningAndMyNumbersStr[0]
+		myNumbersStr := winningAndMyNumbersStr[1]
+
+		winningNumbers := map[int]struct{}{}
+		for i := 0; i < len(winningNumbersStr); i += 3 {
+			number, err := strconv.Atoi(strings.Trim(winningNumbersStr[i:i+2], " "))
+			if err != nil {
+				log.Fatalln("Failed to parse winning number: ", err)
+			}
+			winningNumbers[number] = struct{}{}
+		}
+
+		points := 0
+		for i := 0; i < len(myNumbersStr); i += 3 {
+			number, err := strconv.Atoi(strings.Trim(myNumbersStr[i:i+2], " "))
+			if err != nil {
+				log.Fatalln("Failed to parse my number: ", err)
+			}
+
+			if _, ok := winningNumbers[number]; !ok {
+				continue
+			}
+
+			if points == 0 {
+				points = 1
+			} else {
+				points *= 2
+			}
+		}
+		totalPoints += points
+	}
+
+	fmt.Println("Result: ", totalPoints)
 }
 
 func part2(input string) {
-	panic("todo")
+	cards := strings.Split(input, "\r\n")
+	cardQuantityArr := make([]int, len(cards))
+	for cardIdx, card := range cards {
+		cardQuantityArr[cardIdx] += 1
+		numbersSection := strings.Split(card, ": ")[1]
+		winningAndMyNumbers := strings.Split(numbersSection, " | ")
+		winningNumbersStr := winningAndMyNumbers[0]
+		myNumbersStr := winningAndMyNumbers[1]
+
+		winningNumbers := map[int]struct{}{}
+		for i := 0; i < len(winningNumbersStr); i += 3 {
+			number, err := strconv.Atoi(strings.TrimLeft(winningNumbersStr[i:i+2], " "))
+			if err != nil {
+				log.Fatalln("Failed to parse winning number: ", err)
+			}
+			winningNumbers[number] = struct{}{}
+		}
+
+		numbersMatched := 0
+		for i := 0; i < len(myNumbersStr); i += 3 {
+			number, err := strconv.Atoi(strings.Trim(myNumbersStr[i:i+2], " "))
+			if err != nil {
+				log.Fatalln("Failed to parse my number: ", err)
+			}
+
+			if _, ok := winningNumbers[number]; !ok {
+				continue
+			}
+
+			copyIdx := cardIdx + numbersMatched + 1
+			if copyIdx >= len(cards) {
+				break
+			}
+			cardQuantityArr[copyIdx] += 1 * cardQuantityArr[cardIdx]
+			numbersMatched += 1
+		}
+	}
+
+	totalNumScratchcards := 0
+	for _, numScratchcard := range cardQuantityArr {
+		totalNumScratchcards += numScratchcard
+	}
+	fmt.Println("Result: ", totalNumScratchcards)
 }
