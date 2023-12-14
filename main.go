@@ -64,7 +64,21 @@ func part1(input string) {
 }
 
 func part2(input string) {
-	panic("todo")
+	lines := strings.Split(input, "\r\n")
+	timeStr := strings.Replace(lines[0][5:], " ", "", -1)
+	distanceStr := strings.Replace(lines[1][9:], " ", "", -1)
+
+	time, err := strconv.Atoi(timeStr)
+	if err != nil {
+		log.Fatalln("Failed to parse time: ", err)
+	}
+	recordDistance, err := strconv.Atoi(distanceStr)
+	if err != nil {
+		log.Fatalln("Failed to parse distance: ", err)
+	}
+
+	numWays := calculateNumWays(time, recordDistance)
+	fmt.Println("Result: ", numWays)
 }
 
 func calculateNumWays(time int, recordDistance int) int {
