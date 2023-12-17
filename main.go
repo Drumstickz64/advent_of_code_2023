@@ -48,8 +48,22 @@ func main() {
 }
 
 func part1(input string) {
-	hands := parseInput(input)
+	hands := parseInput(input, part1CalculateHandScore)
+	execSharedPart(hands)
+}
 
+func part2(input string) {
+	hands := parseInput(input, part2CalculateHandScore)
+	execSharedPart(hands)
+}
+
+type Hand struct {
+	cardsStr string
+	bid      int
+	score    uint64
+}
+
+func execSharedPart(hands []Hand) {
 	slices.SortFunc(hands, func(handA Hand, handB Hand) int {
 		return int(handA.score - handB.score)
 	})
@@ -63,17 +77,7 @@ func part1(input string) {
 	fmt.Println("Result: ", totalWinnings)
 }
 
-func part2(input string) {
-	panic("todo")
-}
-
-type Hand struct {
-	cardsStr string
-	bid      int
-	score    uint64
-}
-
-func parseInput(input string) []Hand {
+func parseInput(input string, scoreCalculationFunc func(cardStr string) uint64) []Hand {
 	hands := []Hand{}
 	for _, line := range utils.Lines(input) {
 		parts := strings.Split(line, " ")
@@ -87,14 +91,14 @@ func parseInput(input string) []Hand {
 		hands = append(hands, Hand{
 			cardsStr: cardsStr,
 			bid:      bid,
-			score:    calculateHandScore(cardsStr),
+			score:    scoreCalculationFunc(cardsStr),
 		})
 	}
 
 	return hands
 }
 
-func calculateHandScore(cardsStr string) uint64 {
+func part1CalculateHandScore(cardsStr string) uint64 {
 	cardPowerMap := map[string]uint64{
 		"A": 13,
 		"K": 12,
@@ -120,6 +124,85 @@ func calculateHandScore(cardsStr string) uint64 {
 				break
 			}
 		}
+	}
+
+	var handType uint64
+	switch {
+	case slices.Equal(matches, []int{5}):
+		handType = HANDTYPE_FIVE_OF_A_KIND
+	case slices.Equal(matches, []int{4}):
+		handType = HANDTYPE_FOUR_OF_A_KIND
+	case slices.Equal(matches, []int{3, 2}) || slices.Equal(matches, []int{2, 3}):
+		handType = HANDTYPE_FULLHOUSE
+	case slices.Equal(matches, []int{3}):
+		handType = HANDTYPE_THREE_OF_A_KIND
+	case slices.Equal(matches, []int{2, 2}):
+		handType = HANDTYPE_TWOPAIR
+	case slices.Equal(matches, []int{2}):
+		handType = HANDTYPE_ONEPAIR
+	default:
+		handType = HANDTYPE_HIGHCARD
+	}
+
+	var score uint64 = handType * 10000000000
+	for i := 0; i < 5; i++ {
+		card := string(cardsStr[i])
+		power := cardPowerMap[card]
+		score += power * uint64(math.Pow10((4-i)*2))
+	}
+
+	return score
+}
+
+func part2CalculateHandScore(cardsStr string) uint64 {
+	cardPowerMap := map[string]uint64{
+		"A": 13,
+		"K": 12,
+		"Q": 11,
+		"J": 10,
+		"T": 9,
+		"9": 8,
+		"8": 7,
+		"7": 6,
+		"6": 5,
+		"5": 4,
+		"4": 3,
+		"3": 2,
+		"2": 1,
+	}
+
+	matches := []int{}
+	jCount := 0
+	for cardName := range cardPowerMap {
+		count := strings.Count(cardsStr, cardName)
+		if cardName == "J" {
+			jCount = count
+			continue
+		}
+		if count > 1 {
+			matches = append(matches, count)
+			if count >= 4 {
+				break
+			}
+		}
+	}
+
+	maxMatchIdx := -1
+	maxMatch := 1
+	for i := 0; i < len(matches); i++ {
+		match := matches[i]
+		if match > maxMatch {
+			maxMatch = match
+			maxMatchIdx = i
+		}
+	}
+
+	if jCount == 5 {
+		matches = append(matches, jCount)
+	} else if maxMatchIdx == -1 {
+		matches = append(matches, 1+jCount)
+	} else {
+		matches[maxMatchIdx] += jCount
 	}
 
 	var handType uint64
