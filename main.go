@@ -62,7 +62,35 @@ func part1(input string) {
 }
 
 func part2(input string) {
-	panic("todo")
+	cmds, tree := parseInput(input)
+	steps := 0
+	currNodes := []string{}
+	for node := range tree {
+		if strings.HasSuffix(node, "A") {
+			currNodes = append(currNodes, node)
+		}
+	}
+
+	for i := 0; true; i = (i + 1) % len(cmds) {
+		cmd := cmds[i]
+		done := true
+		for j := 0; j < len(currNodes); j++ {
+			node := currNodes[j]
+			currNodes[j] = tree[node][cmd]
+			if !strings.HasSuffix(currNodes[j], "Z") {
+				done = false
+			}
+		}
+
+		steps++
+
+		if done {
+			break
+		}
+
+	}
+
+	fmt.Println("Result: ", steps)
 }
 
 func parseInput(input string) ([]Command, Tree) {
@@ -79,7 +107,7 @@ func parseInput(input string) ([]Command, Tree) {
 
 	nodesSection := sections[1]
 	tree := Tree{}
-	re := regexp.MustCompile(`([A-Z]+) = \(([A-Z]+), ([A-Z]+)\)`)
+	re := regexp.MustCompile(`(\w+) = \((\w+), (\w+)\)`)
 	for _, nodeStr := range utils.Lines(nodesSection) {
 		match := re.FindStringSubmatch(nodeStr)
 		nodeName := match[1]
