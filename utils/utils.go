@@ -1,5 +1,7 @@
 package utils
 
+import "strings"
+
 func CalculateLineLength(input string) int {
 	for i := 0; true; i++ {
 		if input[i:i+2] == "\r\n" {
@@ -34,4 +36,8 @@ func CalculateAdjacentSpaces(numberIndex []int, lineLength int) []int {
 
 func ByteIsDigit(b byte) bool {
 	return '0' <= b && b <= '9'
+}
+
+func Lines(s string) []string {
+	return strings.Split(s, "\r\n")
 }
