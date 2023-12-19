@@ -5,6 +5,10 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
+	"strings"
+
+	"github.com/Drumstickz64/advent_of_code_2023/utils"
 )
 
 func main() {
@@ -32,9 +36,52 @@ func main() {
 }
 
 func part1(input string) {
-	panic("todo")
+	sequences := parseInput(input)
+	sum := 0
+	for _, sequence := range sequences {
+		sum += predictNextValue(sequence)
+	}
+
+	fmt.Println("Result: ", sum)
 }
 
 func part2(input string) {
 	panic("todo")
+}
+
+func parseInput(input string) [][]int {
+	sequences := [][]int{}
+	for lineIdx, line := range utils.Lines(input) {
+		valueStrs := strings.Split(line, " ")
+		values := []int{}
+		for valueIdx, valueStr := range valueStrs {
+			value, err := strconv.Atoi(valueStr)
+			if err != nil {
+				log.Fatalf("Failed to parse value %v at position %v on line %v", valueStr, valueIdx, lineIdx)
+			}
+
+			values = append(values, value)
+		}
+		sequences = append(sequences, values)
+	}
+
+	return sequences
+}
+
+func predictNextValue(sequence []int) int {
+	diffArr := []int{}
+	diffAllZeros := true
+	for i := 0; i < len(sequence)-1; i++ {
+		diff := sequence[i+1] - sequence[i]
+		if diff != 0 {
+			diffAllZeros = false
+		}
+		diffArr = append(diffArr, diff)
+	}
+
+	if diffAllZeros {
+		return sequence[len(sequence)-1]
+	}
+
+	return sequence[len(sequence)-1] + predictNextValue(diffArr)
 }
