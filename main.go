@@ -46,7 +46,13 @@ func part1(input string) {
 }
 
 func part2(input string) {
-	panic("todo")
+	sequences := parseInput(input)
+	sum := 0
+	for _, sequence := range sequences {
+		sum += predictPreviousValue(sequence)
+	}
+
+	fmt.Println("Result: ", sum)
 }
 
 func parseInput(input string) [][]int {
@@ -84,4 +90,22 @@ func predictNextValue(sequence []int) int {
 	}
 
 	return sequence[len(sequence)-1] + predictNextValue(diffArr)
+}
+
+func predictPreviousValue(sequence []int) int {
+	diffArr := []int{}
+	diffAllZeros := true
+	for i := 0; i < len(sequence)-1; i++ {
+		diff := sequence[i+1] - sequence[i]
+		if diff != 0 {
+			diffAllZeros = false
+		}
+		diffArr = append(diffArr, diff)
+	}
+
+	if diffAllZeros {
+		return sequence[0]
+	}
+
+	return sequence[0] - predictPreviousValue(diffArr)
 }
